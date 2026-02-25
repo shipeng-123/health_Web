@@ -3,15 +3,20 @@
     <el-container style="height: 100vh">
       <el-aside width="220px" style="background: #f5f7fa; padding: 12px">
         <div style="font-weight: bold; margin-bottom: 16px">健康管理系统</div>
+
         <el-menu :default-active="activePath" router>
           <el-menu-item index="/home">首页</el-menu-item>
           <el-menu-item index="/test">测试接口</el-menu-item>
           <el-menu-item index="/profile">个人中心</el-menu-item>
-          <!-- ✅ 新增两行 -->
+
           <el-menu-item index="/sport-record-add">运动记录录入</el-menu-item>
           <el-menu-item index="/sport-record-history"
             >运动记录查询</el-menu-item
           >
+
+          <!-- ✅ 新增饮食模块入口 -->
+          <el-menu-item index="/diet-record-add">饮食记录录入</el-menu-item>
+          <el-menu-item index="/diet-record-history">饮食记录查询</el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -23,9 +28,10 @@
             align-items: center;
           "
         >
-          <span>后台管理</span>
+          <span>Hi! {{ displayName }}</span>
           <el-button type="danger" plain @click="logout">退出登录</el-button>
         </el-header>
+
         <el-main style="background: #fff">
           <router-view />
         </el-main>
@@ -46,5 +52,13 @@ const activePath = computed(() => route.path);
 const logout = () => {
   localStorage.removeItem("token");
   router.push("/login");
+  localStorage.removeItem("nickname");
 };
+const displayName = computed(() => {
+  return (
+    localStorage.getItem("nickname") ||
+    localStorage.getItem("username") ||
+    "用户"
+  );
+});
 </script>

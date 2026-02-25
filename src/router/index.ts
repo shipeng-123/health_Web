@@ -17,9 +17,14 @@ const router = createRouter({
       path: "/",
       component: () => import("../layout/BasicLayout.vue"),
       children: [
+        {
+          path: "diet-record-history",
+          name: "DietRecordHistory",
+          component: () => import("../views/DietRecordHistory.vue"),
+        },
         { path: "", redirect: "/home" },
 
-        // ✅ 拆分后的两个页面
+        // 运动记录
         {
           path: "sport-record-add",
           name: "SportRecordAdd",
@@ -29,6 +34,18 @@ const router = createRouter({
           path: "sport-record-history",
           name: "SportRecordHistory",
           component: () => import("../views/SportRecordHistory.vue"),
+        },
+
+        // 饮食记录（新增）
+        {
+          path: "diet-record-add",
+          name: "DietRecordAdd",
+          component: () => import("../views/DietRecordAdd.vue"),
+        },
+        {
+          path: "diet-record-history",
+          name: "DietRecordHistory",
+          component: () => import("../views/DietRecordHistory.vue"),
         },
 
         {

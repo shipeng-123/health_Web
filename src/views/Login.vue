@@ -67,6 +67,7 @@ const handleLogin = async () => {
     if (res.code === 200 || res.code === 0) {
       localStorage.setItem("token", res.data?.token || "");
       localStorage.setItem("username", res.data?.username || "");
+      localStorage.setItem("nickname", res.data?.nickname || "");
       ElMessage.success("登录成功");
       router.push("/home");
     } else {
