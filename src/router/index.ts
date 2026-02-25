@@ -18,6 +18,19 @@ const router = createRouter({
       component: () => import("../layout/BasicLayout.vue"),
       children: [
         { path: "", redirect: "/home" },
+
+        // ✅ 拆分后的两个页面
+        {
+          path: "sport-record-add",
+          name: "SportRecordAdd",
+          component: () => import("../views/SportRecordAdd.vue"),
+        },
+        {
+          path: "sport-record-history",
+          name: "SportRecordHistory",
+          component: () => import("../views/SportRecordHistory.vue"),
+        },
+
         {
           path: "home",
           name: "Home",

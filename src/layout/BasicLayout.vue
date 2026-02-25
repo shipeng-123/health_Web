@@ -7,6 +7,11 @@
           <el-menu-item index="/home">首页</el-menu-item>
           <el-menu-item index="/test">测试接口</el-menu-item>
           <el-menu-item index="/profile">个人中心</el-menu-item>
+          <!-- ✅ 新增两行 -->
+          <el-menu-item index="/sport-record-add">运动记录录入</el-menu-item>
+          <el-menu-item index="/sport-record-history"
+            >运动记录查询</el-menu-item
+          >
         </el-menu>
       </el-aside>
 
