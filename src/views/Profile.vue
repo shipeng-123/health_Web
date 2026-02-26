@@ -24,9 +24,9 @@
               :on-change="handleAvatarChange"
               accept="image/png,image/jpeg,image/jpg,image/webp"
             >
-              <el-button type="primary" :loading="avatarUploading"
-                >选择并上传头像</el-button
-              >
+              <el-button type="primary" :loading="avatarUploading">
+                选择并上传头像
+              </el-button>
             </el-upload>
 
             <el-button
@@ -51,9 +51,10 @@
             ref="formRef"
             :model="form"
             :rules="rules"
-            label-width="100px"
-            style="max-width: 640px"
+            label-width="110px"
+            style="max-width: 680px"
           >
+            <!-- 基础资料 -->
             <el-form-item label="用户ID">
               <el-input
                 :model-value="form.id ? String(form.id) : ''"
@@ -93,14 +94,91 @@
               <el-input v-model="form.email" placeholder="请输入邮箱（可选）" />
             </el-form-item>
 
+            <!-- ✅ 身体资料 -->
+            <el-divider content-position="left">身体资料</el-divider>
+
+            <el-form-item label="身高(cm)" prop="heightCm">
+              <el-input-number
+                v-model="form.heightCm"
+                :min="50"
+                :max="250"
+                :precision="1"
+                :step="0.5"
+                style="width: 100%"
+                placeholder="例如：175"
+              />
+            </el-form-item>
+
+            <el-form-item label="体重(kg)" prop="weightKg">
+              <el-input-number
+                v-model="form.weightKg"
+                :min="20"
+                :max="300"
+                :precision="1"
+                :step="0.5"
+                style="width: 100%"
+                placeholder="例如：65.5"
+              />
+            </el-form-item>
+
+            <el-form-item label="目标体重(kg)" prop="goalWeightKg">
+              <el-input-number
+                v-model="form.goalWeightKg"
+                :min="20"
+                :max="300"
+                :precision="1"
+                :step="0.5"
+                style="width: 100%"
+                placeholder="例如：60"
+              />
+            </el-form-item>
+
+            <el-form-item label="出生日期" prop="birthDate">
+              <el-date-picker
+                v-model="form.birthDate"
+                type="date"
+                value-format="YYYY-MM-DD"
+                format="YYYY-MM-DD"
+                placeholder="请选择出生日期"
+                style="width: 100%"
+              />
+            </el-form-item>
+
+            <el-form-item label="活动水平" prop="activityLevel">
+              <el-select
+                v-model="form.activityLevel"
+                clearable
+                placeholder="请选择活动水平"
+                style="width: 100%"
+              >
+                <el-option :value="1" label="低（久坐/很少运动）" />
+                <el-option :value="2" label="中（每周运动 3-5 次）" />
+                <el-option :value="3" label="高（高强度/体力劳动）" />
+              </el-select>
+            </el-form-item>
+
+            <el-form-item label="目标类型" prop="targetType">
+              <el-select
+                v-model="form.targetType"
+                clearable
+                placeholder="请选择目标类型"
+                style="width: 100%"
+              >
+                <el-option :value="1" label="减脂" />
+                <el-option :value="2" label="增肌" />
+                <el-option :value="3" label="维持" />
+              </el-select>
+            </el-form-item>
+
+            <!-- 操作 -->
             <el-form-item>
               <el-space wrap>
-                <el-button type="primary" :loading="saving" @click="handleSave"
-                  >保存修改</el-button
-                >
-                <el-button @click="reloadProfile" :loading="loading"
-                  >重新加载</el-button
-                >
+                <el-button type="primary" :loading="saving" @click="handleSave">
+                  保存修改
+                </el-button>
+                <el-button @click="reloadProfile" :loading="loading">
+                  重新加载
+                </el-button>
               </el-space>
             </el-form-item>
           </el-form>
@@ -110,9 +188,16 @@
           <template #header>
             <span>说明</span>
           </template>
+
           <div class="debug-item">
-            当前头像地址（数据库）：<code>{{
-              form.avatarUrl || "（空，前端使用默认头像）"
+            当前头像地址（数据库）：
+            <code>{{ form.avatarUrl || "（空，前端使用默认头像）" }}</code>
+          </div>
+
+          <div class="debug-item" style="margin-top: 6px">
+            身体资料完善状态：
+            <code>{{
+              profileReady ? "✅ 已完善" : "⚠️ 未完善（会影响推荐热量计算）"
             }}</code>
           </div>
         </el-card>
@@ -128,7 +213,7 @@ import { ElMessage } from "element-plus";
 import defaultAvatar from "../assets/default-avatar.svg";
 import { getProfileApi, updateProfileApi, uploadAvatarApi } from "../api/user";
 
-const API_BASE = "http://localhost:8080"; // 你后端地址，后续可放到环境变量
+const API_BASE = "http://localhost:8080";
 
 const formRef = ref<FormInstance>();
 const loading = ref(false);
@@ -142,7 +227,15 @@ const form = reactive({
   nickname: "",
   gender: 0,
   email: "",
-  avatarUrl: "", // 数据库存的路径，如 /uploads/avatar/xxx.jpg
+  avatarUrl: "",
+
+  // ✅ 身体资料
+  heightCm: null as number | null, // 身高(cm)
+  weightKg: null as number | null, // 当前体重(kg)   (数据库列你是 weight)
+  goalWeightKg: null as number | null, // 目标体重(kg)
+  birthDate: "", // YYYY-MM-DD
+  activityLevel: null as number | null, // 1低 2中 3高
+  targetType: null as number | null, // 1减脂 2增肌 3维持
 });
 
 const validatePhone = (
@@ -153,6 +246,17 @@ const validatePhone = (
   if (!value) return callback(new Error("请输入手机号"));
   if (!/^1\d{10}$/.test(value)) return callback(new Error("手机号格式不正确"));
   callback();
+};
+
+// ✅ 可为空；填了就必须合理
+const validateOptionalRange = (min: number, max: number, msg: string) => {
+  return (_rule: any, v: any, cb: (err?: Error) => void) => {
+    if (v === null || v === "" || typeof v === "undefined") return cb();
+    const n = Number(v);
+    if (Number.isNaN(n)) return cb(new Error(msg));
+    if (n < min || n > max) return cb(new Error(msg));
+    cb();
+  };
 };
 
 const rules: FormRules = {
@@ -168,7 +272,7 @@ const rules: FormRules = {
         value: string,
         callback: (error?: Error) => void
       ) => {
-        if (!value) return callback(); // 允许为空
+        if (!value) return callback();
         const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
         if (!ok) return callback(new Error("邮箱格式不正确"));
         callback();
@@ -176,7 +280,37 @@ const rules: FormRules = {
       trigger: "blur",
     },
   ],
+
+  // ✅ 身体资料校验
+  heightCm: [
+    {
+      validator: validateOptionalRange(50, 250, "身高范围建议 50-250cm"),
+      trigger: "blur",
+    },
+  ],
+  weightKg: [
+    {
+      validator: validateOptionalRange(20, 300, "体重范围建议 20-300kg"),
+      trigger: "blur",
+    },
+  ],
+  goalWeightKg: [
+    {
+      validator: validateOptionalRange(20, 300, "目标体重范围建议 20-300kg"),
+      trigger: "blur",
+    },
+  ],
 };
+
+const profileReady = computed(() => {
+  return (
+    form.heightCm !== null &&
+    form.weightKg !== null &&
+    !!form.birthDate &&
+    form.activityLevel !== null &&
+    form.targetType !== null
+  );
+});
 
 // 前端展示时把相对路径拼成完整 URL
 const fullAvatarSrc = computed(() => {
@@ -188,7 +322,6 @@ const fullAvatarSrc = computed(() => {
   ) {
     return form.avatarUrl;
   }
-
   return `${API_BASE}${form.avatarUrl}`;
 });
 
@@ -200,6 +333,17 @@ const fillForm = (data: any) => {
   form.gender = typeof data.gender === "number" ? data.gender : 0;
   form.email = data.email ?? "";
   form.avatarUrl = data.avatarUrl ?? "";
+
+  // ✅ 身体资料：后端字段名你自己统一一下
+  form.heightCm = data.heightCm ?? null;
+
+  // 兼容：你 DB 列名叫 weight；有的同学喜欢叫 weightKg
+  form.weightKg = data.weightKg ?? data.weight ?? null;
+
+  form.goalWeightKg = data.goalWeightKg ?? null;
+  form.birthDate = data.birthDate ?? "";
+  form.activityLevel = data.activityLevel ?? null;
+  form.targetType = data.targetType ?? null;
 };
 
 const reloadProfile = async () => {
@@ -225,12 +369,21 @@ const handleSave = async () => {
     await formRef.value.validate();
     saving.value = true;
 
+    // ⚠️ 这里发送的字段要和后端 UpdateProfileReq 一致
     const res = await updateProfileApi({
       phone: form.phone.trim(),
       nickname: form.nickname.trim(),
       gender: form.gender,
       email: form.email.trim(),
       avatarUrl: form.avatarUrl || "",
+
+      // ✅ 身体资料（你后端需要加到 UpdateProfileReq）
+      heightCm: form.heightCm,
+      weight: form.weightKg, // 如果后端叫 weight，就改成 weight: form.weightKg
+      goalWeightKg: form.goalWeightKg,
+      birthDate: form.birthDate || null,
+      activityLevel: form.activityLevel,
+      targetType: form.targetType,
     });
 
     if (res.code !== 0) {
@@ -241,10 +394,7 @@ const handleSave = async () => {
     ElMessage.success("保存成功");
     await reloadProfile();
   } catch (error: any) {
-    // 表单校验失败会抛异常；请求失败也可能到这里
-    if (error?.message) {
-      ElMessage.error(error.message);
-    }
+    if (error?.message) ElMessage.error(error.message);
   } finally {
     saving.value = false;
   }
@@ -275,7 +425,7 @@ const handleAvatarChange: UploadProps["onChange"] = async (uploadFile) => {
       return;
     }
 
-    // 上传成功后，只更新表单里的 avatarUrl；真正写入数据库在“保存修改”时完成
+    // 上传成功后只更新 avatarUrl；真正写库在“保存修改”
     form.avatarUrl = res.data;
     ElMessage.success("头像上传成功，请点击“保存修改”完成资料更新");
   } catch (error: any) {

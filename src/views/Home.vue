@@ -7,6 +7,11 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 const go = (path: string) => router.push(path);
+
+// ✅ 资料不完整时：跳去个人中心
+const goProfile = () => router.push("/profile");
+// 如果你想跳过去自动定位到“身体资料”，把上面改成：router.push("/profile#body")
+
 function formatLocalDate(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -96,10 +101,19 @@ onMounted(() => {
               </div>
             </div>
 
+            <!-- ✅ 资料不完整：显示按钮跳转 -->
             <div
-              class="tip-box"
-              :class="{ warn: daily.profileReady === false }"
+              v-if="daily.profileReady === false"
+              class="tip-box warn tip-box-row"
             >
+              <span>{{ remainText }}</span>
+              <el-button type="primary" size="small" @click="goProfile">
+                去完善
+              </el-button>
+            </div>
+
+            <!-- ✅ 资料完整：正常显示 -->
+            <div v-else class="tip-box">
               {{ remainText }}
             </div>
 
@@ -149,7 +163,7 @@ onMounted(() => {
             >
               🔎 运动查询：查看运动记录与消耗
             </div>
-            <div class="todo-item clickable" @click="go('/profile')">
+            <div class="todo-item clickable" @click="goProfile">
               👤 完善个人资料：计算推荐摄入热量
             </div>
           </div>
@@ -244,6 +258,14 @@ onMounted(() => {
   color: #9a3412;
 }
 
+/* ✅ 提示 + 按钮横向排列 */
+.tip-box-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .sub-row {
   margin-top: 10px;
   display: flex;
@@ -285,6 +307,7 @@ onMounted(() => {
     align-items: flex-start;
   }
 }
+
 .clickable {
   cursor: pointer;
   transition: all 0.2s;
