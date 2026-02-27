@@ -18,6 +18,11 @@ const router = createRouter({
       component: () => import("../layout/BasicLayout.vue"),
       children: [
         {
+          path: "body-metric",
+          name: "BodyMetric",
+          component: () => import("../views/BodyMetric.vue"),
+        },
+        {
           path: "diet-record-history",
           name: "DietRecordHistory",
           component: () => import("../views/DietRecordHistory.vue"),
