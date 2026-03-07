@@ -17,6 +17,27 @@ const router = createRouter({
       path: "/",
       component: () => import("../layout/BasicLayout.vue"),
       children: [
+        // 运动计划（模块5）
+        {
+          path: "health-report",
+          name: "HealthReport",
+          component: () => import("../views/HealthReport.vue"),
+        },
+        {
+          path: "plan-template",
+          name: "PlanTemplate",
+          component: () => import("../views/plan/PlanTemplate.vue"),
+        },
+        {
+          path: "plan-week",
+          name: "PlanWeek",
+          component: () => import("../views/plan/PlanWeek.vue"),
+        },
+        {
+          path: "plan-today",
+          name: "PlanToday",
+          component: () => import("../views/plan/PlanToday.vue"),
+        },
         {
           path: "body-metric",
           name: "BodyMetric",

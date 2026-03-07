@@ -18,6 +18,13 @@
           <!-- ✅ 新增饮食模块入口 -->
           <el-menu-item index="/diet-record-add">饮食记录录入</el-menu-item>
           <el-menu-item index="/diet-record-history">饮食记录查询</el-menu-item>
+          <el-sub-menu index="plan">
+            <template #title>运动计划</template>
+            <el-menu-item index="/plan-template">模板计划</el-menu-item>
+            <el-menu-item index="/plan-week">周计划</el-menu-item>
+            <el-menu-item index="/plan-today">今日计划</el-menu-item>
+          </el-sub-menu>
+          <el-menu-item index="/health-report">健康报告</el-menu-item>
         </el-menu>
       </el-aside>
 
