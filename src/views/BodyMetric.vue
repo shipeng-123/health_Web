@@ -57,6 +57,7 @@
                 :step="0.1"
                 :precision="2"
                 style="width: 100%"
+                placeholder="例如 96.5"
               />
             </el-form-item>
           </el-col>
@@ -69,6 +70,7 @@
                 :step="0.1"
                 :precision="2"
                 style="width: 100%"
+                placeholder="例如 82.0"
               />
             </el-form-item>
           </el-col>
@@ -81,6 +83,7 @@
                 :step="0.1"
                 :precision="2"
                 style="width: 100%"
+                placeholder="例如 98.0"
               />
             </el-form-item>
           </el-col>
@@ -125,6 +128,22 @@
               <div class="bmi-row">
                 <span class="label">体重：</span>
                 <span>{{ latest.weightKg ?? "-" }} kg</span>
+              </div>
+              <div class="bmi-row">
+                <span class="label">体脂率：</span>
+                <span>{{ latest.bodyFatPct ?? "-" }} %</span>
+              </div>
+              <div class="bmi-row">
+                <span class="label">胸围：</span>
+                <span>{{ latest.chestCm ?? "-" }} cm</span>
+              </div>
+              <div class="bmi-row">
+                <span class="label">腰围：</span>
+                <span>{{ latest.waistCm ?? "-" }} cm</span>
+              </div>
+              <div class="bmi-row">
+                <span class="label">臀围：</span>
+                <span>{{ latest.hipCm ?? "-" }} cm</span>
               </div>
               <div class="bmi-row">
                 <span class="label">BMI：</span>
@@ -184,7 +203,9 @@
               <el-checkbox-group v-model="checkedLines" class="checks">
                 <el-checkbox label="weightKg">体重</el-checkbox>
                 <el-checkbox label="bodyFatPct">体脂率</el-checkbox>
+                <el-checkbox label="chestCm">胸围</el-checkbox>
                 <el-checkbox label="waistCm">腰围</el-checkbox>
+                <el-checkbox label="hipCm">臀围</el-checkbox>
                 <el-checkbox label="bmi">BMI</el-checkbox>
               </el-checkbox-group>
             </div>
@@ -210,6 +231,14 @@ import {
   type UpsertBodyMetricReq,
   type BodyMetricTrendResp,
 } from "@/api/bodyMetric";
+
+type MetricLineKey =
+  | "weightKg"
+  | "bodyFatPct"
+  | "chestCm"
+  | "waistCm"
+  | "hipCm"
+  | "bmi";
 
 const loading = ref(false);
 const saving = ref(false);
@@ -239,14 +268,13 @@ const range = reactive({
   end: "",
 });
 
-// ✅ 默认勾选（你也可以按需删）
-const checkedLines = ref<Array<"weightKg" | "bodyFatPct" | "waistCm" | "bmi">>([
+const checkedLines = ref<MetricLineKey[]>([
   "weightKg",
   "waistCm",
+  "bodyFatPct",
   "bmi",
 ]);
 
-// ✅ 缓存：最后一次查询的趋势数据（勾选/取消时直接重画，不请求后端）
 const trendData = ref<BodyMetricTrendResp>({
   dates: [],
   weightKg: [],
@@ -272,7 +300,6 @@ function onResize() {
   chart?.resize();
 }
 
-// ✅ 核心：根据 checkedLines 组装 series（双Y轴）
 function renderChart(data: BodyMetricTrendResp) {
   if (!chart) return;
 
@@ -289,18 +316,28 @@ function renderChart(data: BodyMetricTrendResp) {
     });
   };
 
-  // 左轴：体重/腰围/BMI（数值大）
-  if (checkedLines.value.includes("weightKg"))
+  // 左轴：体重 / 围度 / BMI
+  if (checkedLines.value.includes("weightKg")) {
     addLine("体重(kg)", data.weightKg, 0);
-  if (checkedLines.value.includes("waistCm"))
+  }
+  if (checkedLines.value.includes("chestCm")) {
+    addLine("胸围(cm)", data.chestCm, 0);
+  }
+  if (checkedLines.value.includes("waistCm")) {
     addLine("腰围(cm)", data.waistCm, 0);
-  if (checkedLines.value.includes("bmi")) addLine("BMI", data.bmi, 0);
+  }
+  if (checkedLines.value.includes("hipCm")) {
+    addLine("臀围(cm)", data.hipCm, 0);
+  }
+  if (checkedLines.value.includes("bmi")) {
+    addLine("BMI", data.bmi, 0);
+  }
 
-  // 右轴：体脂率（数值小）
-  if (checkedLines.value.includes("bodyFatPct"))
+  // 右轴：体脂率
+  if (checkedLines.value.includes("bodyFatPct")) {
     addLine("体脂率(%)", data.bodyFatPct, 1);
+  }
 
-  // ✅ 关键：notMerge=true，确保每次 setOption 都用新的 series 覆盖旧的
   chart.setOption(
     {
       tooltip: { trigger: "axis" },
@@ -323,7 +360,9 @@ async function reloadAll() {
     const res = await getLatestBodyMetric();
     if (res.code === 0) {
       latest.value = res.data;
-      if (latest.value?.recordDate) form.recordDate = latest.value.recordDate;
+      if (latest.value?.recordDate) {
+        form.recordDate = latest.value.recordDate;
+      }
     } else {
       latest.value = null;
     }
@@ -333,7 +372,6 @@ async function reloadAll() {
 }
 
 function defaultRange() {
-  // 默认近30天
   const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - 30);
@@ -354,16 +392,16 @@ async function loadTrend() {
     ElMessage.warning("请先选择开始/结束日期");
     return;
   }
+
   const res = await getBodyMetricTrend(range.start, range.end);
   if (res.code === 0) {
-    trendData.value = res.data; // ✅ 缓存这次查询结果
-    renderChart(trendData.value); // ✅ 立即渲染
+    trendData.value = res.data;
+    renderChart(trendData.value);
   } else {
     ElMessage.error(res.message || "查询失败");
   }
 }
 
-// ✅ 你要的效果：勾选/取消立即更新图（不请求后端，不改日期）
 watch(
   checkedLines,
   () => {
@@ -377,13 +415,14 @@ async function onSave() {
     ElMessage.warning("请选择记录日期");
     return;
   }
+
   saving.value = true;
   try {
     const res = await upsertBodyMetric(form);
     if (res.code === 0) {
       ElMessage.success("保存成功");
       latest.value = res.data;
-      await loadTrend(); // 保存后自动刷新趋势
+      await loadTrend();
     } else {
       ElMessage.error(res.message || "保存失败");
     }
@@ -405,6 +444,7 @@ async function onDeleteLatest() {
   if (res.code === 0) {
     ElMessage.success("删除成功");
     latest.value = null;
+    await reloadAll();
     await loadTrend();
   } else {
     ElMessage.error(res.message || "删除失败");
@@ -415,7 +455,7 @@ onMounted(async () => {
   defaultRange();
   initChart();
   await reloadAll();
-  await loadTrend(); // ✅ 初次加载就查一次趋势，后面勾选直接重画
+  await loadTrend();
 });
 
 onBeforeUnmount(() => {
@@ -461,7 +501,7 @@ onBeforeUnmount(() => {
 .bmi-box .label {
   color: #666;
   display: inline-block;
-  width: 60px;
+  width: 70px;
 }
 .chart {
   width: 100%;

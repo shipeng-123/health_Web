@@ -357,7 +357,9 @@ function renderLine() {
   const dates = bodyTrend.value?.dates ?? [];
   const weightKg = bodyTrend.value?.weightKg ?? [];
   const bodyFatPct = bodyTrend.value?.bodyFatPct ?? [];
+  const chestCm = bodyTrend.value?.chestCm ?? [];
   const waistCm = bodyTrend.value?.waistCm ?? [];
+  const hipCm = bodyTrend.value?.hipCm ?? [];
   const bmi = bodyTrend.value?.bmi ?? [];
 
   lineChart.setOption({
@@ -367,12 +369,48 @@ function renderLine() {
       type: "category",
       data: dates.map((d) => d.slice(5)),
     },
-    yAxis: { type: "value" },
+    yAxis: [
+      {
+        type: "value",
+        name: "体重/围度/BMI",
+      },
+      {
+        type: "value",
+        name: "体脂率(%)",
+        position: "right",
+      },
+    ],
     series: [
-      { name: "体重", type: "line", smooth: true, data: weightKg },
-      { name: "体脂率", type: "line", smooth: true, data: bodyFatPct },
-      { name: "腰围", type: "line", smooth: true, data: waistCm },
-      { name: "BMI", type: "line", smooth: true, data: bmi },
+      {
+        name: "体重",
+        type: "line",
+        smooth: true,
+        data: weightKg,
+        yAxisIndex: 0,
+      },
+      {
+        name: "体脂率",
+        type: "line",
+        smooth: true,
+        data: bodyFatPct,
+        yAxisIndex: 1,
+      },
+      {
+        name: "胸围",
+        type: "line",
+        smooth: true,
+        data: chestCm,
+        yAxisIndex: 0,
+      },
+      {
+        name: "腰围",
+        type: "line",
+        smooth: true,
+        data: waistCm,
+        yAxisIndex: 0,
+      },
+      { name: "臀围", type: "line", smooth: true, data: hipCm, yAxisIndex: 0 },
+      { name: "BMI", type: "line", smooth: true, data: bmi, yAxisIndex: 0 },
     ],
   });
 }
