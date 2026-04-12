@@ -14,7 +14,6 @@
             </el-avatar>
 
             <div class="avatar-tips">
-              <div class="main-tip">上传头像后会立即回显</div>
               <div class="sub-tip">支持 jpg / png / webp，大小不超过 2MB</div>
             </div>
 
@@ -182,24 +181,6 @@
               </el-space>
             </el-form-item>
           </el-form>
-        </el-card>
-
-        <el-card style="margin-top: 16px">
-          <template #header>
-            <span>说明</span>
-          </template>
-
-          <div class="debug-item">
-            当前头像地址（数据库）：
-            <code>{{ form.avatarUrl || "（空，前端使用默认头像）" }}</code>
-          </div>
-
-          <div class="debug-item" style="margin-top: 6px">
-            身体资料完善状态：
-            <code>{{
-              profileReady ? "✅ 已完善" : "⚠️ 未完善（会影响推荐热量计算）"
-            }}</code>
-          </div>
         </el-card>
       </el-col>
     </el-row>

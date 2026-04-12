@@ -14,14 +14,71 @@ const router = createRouter({
       component: () => import("../views/Register.vue"),
     },
     {
+      path: "/admin",
+      component: () => import("../layout/AdminLayout.vue"),
+      children: [
+        { path: "", redirect: "/admin/dashboard" },
+        {
+          path: "dashboard",
+          name: "AdminDashboard",
+          component: () => import("../views/admin/Dashboard.vue"),
+        },
+        {
+          path: "users",
+          name: "AdminUsers",
+          component: () => import("../views/admin/UserManage.vue"),
+        },
+        {
+          path: "foods",
+          name: "AdminFoods",
+          component: () => import("../views/admin/FoodManage.vue"),
+        },
+        {
+          path: "templates",
+          name: "AdminTemplates",
+          component: () => import("../views/admin/TemplateManage.vue"),
+        },
+      ],
+    },
+    {
       path: "/",
       component: () => import("../layout/BasicLayout.vue"),
       children: [
-        // 运动计划（模块5）
+        { path: "", redirect: "/home" },
         {
-          path: "health-report",
-          name: "HealthReport",
-          component: () => import("../views/HealthReport.vue"),
+          path: "home",
+          name: "Home",
+          component: () => import("../views/Home.vue"),
+        },
+        {
+          path: "profile",
+          name: "Profile",
+          component: () => import("../views/Profile.vue"),
+        },
+        {
+          path: "body-metric",
+          name: "BodyMetric",
+          component: () => import("../views/BodyMetric.vue"),
+        },
+        {
+          path: "diet-record-add",
+          name: "DietRecordAdd",
+          component: () => import("../views/DietRecordAdd.vue"),
+        },
+        {
+          path: "diet-record-history",
+          name: "DietRecordHistory",
+          component: () => import("../views/DietRecordHistory.vue"),
+        },
+        {
+          path: "sport-record-add",
+          name: "SportRecordAdd",
+          component: () => import("../views/SportRecordAdd.vue"),
+        },
+        {
+          path: "sport-record-history",
+          name: "SportRecordHistory",
+          component: () => import("../views/SportRecordHistory.vue"),
         },
         {
           path: "plan-template",
@@ -39,72 +96,37 @@ const router = createRouter({
           component: () => import("../views/plan/PlanToday.vue"),
         },
         {
-          path: "body-metric",
-          name: "BodyMetric",
-          component: () => import("../views/BodyMetric.vue"),
-        },
-        {
-          path: "diet-record-history",
-          name: "DietRecordHistory",
-          component: () => import("../views/DietRecordHistory.vue"),
-        },
-        { path: "", redirect: "/home" },
-
-        // 运动记录
-        {
-          path: "sport-record-add",
-          name: "SportRecordAdd",
-          component: () => import("../views/SportRecordAdd.vue"),
-        },
-        {
-          path: "sport-record-history",
-          name: "SportRecordHistory",
-          component: () => import("../views/SportRecordHistory.vue"),
-        },
-
-        // 饮食记录（新增）
-        {
-          path: "diet-record-add",
-          name: "DietRecordAdd",
-          component: () => import("../views/DietRecordAdd.vue"),
-        },
-        {
-          path: "diet-record-history",
-          name: "DietRecordHistory",
-          component: () => import("../views/DietRecordHistory.vue"),
-        },
-
-        {
-          path: "home",
-          name: "Home",
-          component: () => import("../views/Home.vue"),
+          path: "health-report",
+          name: "HealthReport",
+          component: () => import("../views/HealthReport.vue"),
         },
         {
           path: "test",
           name: "TestApi",
           component: () => import("../views/TestApi.vue"),
         },
-        {
-          path: "profile",
-          name: "Profile",
-          component: () => import("../views/Profile.vue"),
-        },
       ],
     },
   ],
 });
 
-// 简单守卫：注册页和登录页都放行
 router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
   const whiteList = ["/login", "/register"];
+  const isAdminRoute = to.path.startsWith("/admin");
 
   if (!whiteList.includes(to.path) && !token) {
     next("/login");
     return;
   }
 
-  if ((to.path === "/login" || to.path === "/register") && token) {
+  if (whiteList.includes(to.path) && token) {
+    next(role === "1" ? "/admin/dashboard" : "/home");
+    return;
+  }
+
+  if (isAdminRoute && role !== "1") {
     next("/home");
     return;
   }
