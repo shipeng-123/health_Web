@@ -43,9 +43,9 @@
       <el-table-column label="操作" width="220" fixed="right">
         <template #default="{ row }">
           <el-button size="small" @click="openEdit(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="handleDelete(row)"
-            >删除</el-button
-          >
+          <el-button size="small" type="danger" @click="handleDelete(row)">
+            删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -79,22 +79,35 @@
         <el-table-column label="周几" width="120">
           <template #default="{ row }">
             <el-select v-model="row.dayOfWeek" style="width: 100%">
-              <el-option label="周一" :value="1" />
-              <el-option label="周二" :value="2" />
-              <el-option label="周三" :value="3" />
-              <el-option label="周四" :value="4" />
-              <el-option label="周五" :value="5" />
-              <el-option label="周六" :value="6" />
-              <el-option label="周日" :value="7" />
+              <el-option
+                v-for="item in weekOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
             </el-select>
           </template>
         </el-table-column>
-        <el-table-column label="运动类型">
+
+        <el-table-column label="运动类型" min-width="140">
           <template #default="{ row }">
-            <el-input v-model="row.sportType" />
+            <el-select
+              v-model="row.sportType"
+              placeholder="请选择运动类型"
+              style="width: 100%"
+              clearable
+            >
+              <el-option
+                v-for="item in sportTypeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
           </template>
         </el-table-column>
-        <el-table-column label="目标时长(分)" width="140">
+
+        <el-table-column label="目标时长(分)" width="160">
           <template #default="{ row }">
             <el-input-number
               v-model="row.targetDurationMin"
@@ -103,7 +116,8 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="目标距离(km)" width="140">
+
+        <el-table-column label="目标距离(km)" width="160">
           <template #default="{ row }">
             <el-input-number
               v-model="row.targetDistanceKm"
@@ -113,21 +127,24 @@
             />
           </template>
         </el-table-column>
+
         <el-table-column label="提醒时间" width="130">
           <template #default="{ row }">
             <el-input v-model="row.remindTime" placeholder="08:00" />
           </template>
         </el-table-column>
+
         <el-table-column label="备注">
           <template #default="{ row }">
             <el-input v-model="row.remark" />
           </template>
         </el-table-column>
+
         <el-table-column label="操作" width="100">
           <template #default="{ $index }">
-            <el-button type="danger" link @click="removeItem($index)"
-              >删除</el-button
-            >
+            <el-button type="danger" link @click="removeItem($index)">
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -152,6 +169,31 @@ const query = reactive({
 
 const tableData = ref<any[]>([]);
 const dialogVisible = ref(false);
+
+const weekOptions = [
+  { label: "周一", value: 1 },
+  { label: "周二", value: 2 },
+  { label: "周三", value: 3 },
+  { label: "周四", value: 4 },
+  { label: "周五", value: 5 },
+  { label: "周六", value: 6 },
+  { label: "周日", value: 7 },
+];
+
+const sportTypeOptions = [
+  { label: "跑步", value: "RUNNING" },
+  { label: "骑行", value: "CYCLING" },
+  { label: "游泳", value: "SWIMMING" },
+  { label: "力量训练", value: "STRENGTH_TRAINING" },
+  { label: "步行", value: "WALKING" },
+  { label: "跳绳", value: "JUMP_ROPE" },
+  { label: "羽毛球", value: "BADMINTON" },
+  { label: "篮球", value: "BASKETBALL" },
+  { label: "足球", value: "FOOTBALL" },
+  { label: "瑜伽", value: "YOGA" },
+  { label: "有氧操", value: "AEROBICS" },
+  { label: "徒步", value: "HIKING" },
+];
 
 const emptyItem = () => ({
   dayOfWeek: 1,
@@ -281,9 +323,11 @@ onMounted(loadData);
   align-items: center;
   justify-content: space-between;
 }
+
 .search-bar {
   margin-bottom: 12px;
 }
+
 .items-header {
   margin: 12px 0;
   display: flex;

@@ -54,7 +54,6 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="food_name" label="食物名称" min-width="140" />
         <el-table-column prop="category" label="分类" min-width="120" />
         <el-table-column
